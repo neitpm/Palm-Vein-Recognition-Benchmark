@@ -53,7 +53,7 @@ Below are the 3D layer diagrams detailing tensors, convolutions, residual connec
 ![SSDLite MobileNetV3 Architecture](docs/figures/2_ssdlite_mobilenetv3_architecture.png)
 
 #### 3. EfficientNet-B0 Backbone Layer-by-Layer Tensor Flow
-![EfficientNet-B0 Backbone](docs/figures/3_efficientnet_b0_backbone.png)
+![EfficientNet-B0 Backbone](docs/figures/3_efficientnet_b0_backbone.png?v=20261014)
 
 #### 4. Faster R-CNN with ResNet-50-FPN Architecture (RPN + RoIAlign)
 ![Faster R-CNN ResNet-50 FPN](docs/figures/4_fasterrcnn_resnet50_fpn.png)
