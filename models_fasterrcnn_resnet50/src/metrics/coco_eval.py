@@ -13,11 +13,11 @@ def coco_map(model, data_loader, coco_gt, iou_type="bbox", device="cuda",
             imgs = [ (i.float().div(255) if i.dtype == torch.uint8 else i).to(device) for i in imgs ]
             outs = model(imgs)
 
-        for i, out in enumerate(outs):
-            image_id = int(tgts[i]["image_id"])
-            img_ids.append(image_id)
-            if len(out["boxes"]) == 0:
-                continue
+            for i, out in enumerate(outs):
+                image_id = int(tgts[i]["image_id"])
+                img_ids.append(image_id)
+                if len(out["boxes"]) == 0:
+                    continue
 
             orig_w = coco_gt.imgs[image_id]['width']
             orig_h = coco_gt.imgs[image_id]['height']

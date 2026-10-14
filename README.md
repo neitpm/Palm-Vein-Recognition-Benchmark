@@ -89,16 +89,18 @@ flowchart LR
 
 To ensure a scientifically fair comparison, both models are evaluated under the **identical Best-Validation-Loss checkpoint criterion** on the same validation split (`output_newdataset/`):
 
-| Metric | SSDLite (MobileNetV3) [Best-Loss Ep 6] | Faster R-CNN (Two-Stage) [Best-Loss Ep 19] | Source Artifact |
+| Metric | SSDLite (MobileNetV3) [Best-Loss Ep 6] | Faster R-CNN (EfficientNet-B0) [Best-Loss Ep 19] | Source Artifact |
 | :--- | :---: | :---: | :--- |
-| **mAP@0.5:0.95 (COCO)** | **0.6691 (66.9%)** | **0.6846 (68.5%)** | `checkpoints/best_loss_metrics.json` / `metrics_epoch.json` (Ep 19) |
+| **mAP@0.5:0.95 (COCO)** | **0.6691 (66.9%)** | **0.6846 (68.5%)** | `models_ssdlite_mobilenetv3/output_newdataset/checkpoints/best_loss_metrics.json` vs. `models_fasterrcnn_resnet50/output_fasterrcnn_efficientnetb0_palm_newdataset/logs/metrics_epoch.json` (Ep 19) |
 | **mAP@0.3** | **0.9889 (98.9%)** | **1.0000 (100.0%)** | Tracked evaluation logs |
-| **Precision** | **0.9986 (99.9%)** | **0.3571 (35.7%)** | Pointwise prediction vs. RPN proposal redundancy |
-| **Recall** | **1.0000 (100.0%)** | **0.5000 (50.0%)** | Palm bounding box coverage |
-| **F1-Score** | **0.9993 (99.9%)** | **0.4167 (41.7%)** | Harmonic mean of P and R at Best-Loss |
+| **Precision** | **0.9986 (99.9%)** | **0.3571 (35.7%)** | Positive class (palm) precision |
+| **Recall** | **1.0000 (100.0%)** | **0.5000 (50.0%)** | Positive class (palm) recall |
+| **F1-Score** | **0.9993 (99.9%)** | **0.4167 (41.7%)** | Harmonic mean of positive class P and R |
 
-> *Benchmark Selection Rationale:*  
-> Both models are reported at their respective minimum validation loss checkpoints (`Epoch 6` for SSDLite with `val_loss = 1.401`, `Epoch 19` for Faster R-CNN with `val_loss = 0.063`). While minimum validation loss is a standard early-stopping heuristic, it does not guarantee optimal out-of-distribution generalization. While Faster R-CNN achieves higher bounding box overlap (`mAP@0.5:0.95` of `68.5%` vs `66.9%`), SSDLite yields higher observed Precision (`99.9%` vs `35.7%`) on this evaluation split, hypothesized to result from single-stage direct classification versus dense candidate proposal generation in two-stage RPN heads.
+> *Methodological & Evaluation Notes:*  
+> 1. **Artifact Provenance:** Faster R-CNN metrics above correspond to the `EfficientNet-B0-FPN` backbone experiment (`output_fasterrcnn_efficientnetb0_palm_newdataset`), where minimum validation loss was achieved at `Epoch 19` (`val_loss = 0.0631`). The `ResNet-50-FPN` experiment (`output_newdataset`) tracked across 29 epochs reached `best_loss = 0.1040` with `best_map = 0.8000`.
+> 2. **Evaluation Metric Alignment:** Both models evaluate Precision, Recall, and F1 specifically on the positive class (`palm`, class 1) using optimal bipartite-style matching (matching predictions to the highest-IoU unassigned ground-truth box).
+> 3. **Preprocessing Caveat:** SSDLite resizes images to a fixed $320\times 320$ with ImageNet normalization, while Faster R-CNN evaluates multi-scale tensors scaled to $[0, 1]$. Consequently, the reported results reflect differences in both model architecture and respective preprocessing pipelines.
 
 ### Artifact-Driven Benchmark Chart
 ![Model Comparison Chart](benchmark_comparison/model_comparison_chart.png)

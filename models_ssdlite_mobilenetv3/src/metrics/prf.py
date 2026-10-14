@@ -47,18 +47,28 @@ def detection_prf_cm(model, loader, num_classes, iou_thr=0.5, score_thr=0.30, de
                 for pb, pl in zip(pred_boxes, pred_labels):
                     ious = compute_iou_batch(pb, gt_boxes)
                     if ious.size == 0:
-                        y_true.append(0); y_pred.append(int(pl))
+                        y_true.append(0)
+                        y_pred.append(int(pl))
                         continue
-                    gi = int(np.argmax(ious))
-                    if ious[gi] >= iou_thr and (gi not in matched_gt):
-                        y_true.append(int(gt_labels[gi])); y_pred.append(int(pl))
-                        matched_gt.add(gi)
-                    else:
-                        y_true.append(0); y_pred.append(int(pl))
+                    
+                    # Tìm GT chưa ghép có IoU lớn nhất
+                    sorted_gt_indices = np.argsort(-ious)
+                    assigned = False
+                    for gi in sorted_gt_indices:
+                        if ious[gi] >= iou_thr and (gi not in matched_gt):
+                            y_true.append(int(gt_labels[gi]))
+                            y_pred.append(int(pl))
+                            matched_gt.add(gi)
+                            assigned = True
+                            break
+                    if not assigned:
+                        y_true.append(0)
+                        y_pred.append(int(pl))
 
                 for gi, gl in enumerate(gt_labels):
                     if gi not in matched_gt:
-                        y_true.append(int(gl)); y_pred.append(0)
+                        y_true.append(int(gl))
+                        y_pred.append(0)
 
     if len(y_true) == 0:
         return 0.0, 0.0, 0.0, np.zeros((num_classes, num_classes), dtype=int), {}
@@ -73,8 +83,8 @@ def detection_prf_cm(model, loader, num_classes, iou_thr=0.5, score_thr=0.30, de
                  for i in range(len(per_class_prec))}
 
     pos_cls = 1
-    prec_pos = float(per_class.get(pos_cls, (0.0,0.0,0.0))[0])
-    rec_pos  = float(per_class.get(pos_cls, (0.0,0.0,0.0))[1])
-    f1_pos   = float(per_class.get(pos_cls, (0.0,0.0,0.0))[2])
+    prec_pos = float(per_class.get(pos_cls, (0.0, 0.0, 0.0))[0])
+    rec_pos  = float(per_class.get(pos_cls, (0.0, 0.0, 0.0))[1])
+    f1_pos   = float(per_class.get(pos_cls, (0.0, 0.0, 0.0))[2])
 
     return prec_pos, rec_pos, f1_pos, cm, per_class
