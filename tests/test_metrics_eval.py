@@ -265,8 +265,11 @@ def test_coco_map_edge_cases():
         
         # Predictions:
         # Image 10: 2 duplicate predictions on the single GT box [10, 10, 30, 30] (1 with score 0.95, 1 with score 0.85)
+        #           Under COCO standard, the higher-score pred (0.95) matches GT (TP), second pred (0.85) is FP.
         # Image 20: 1 prediction on the iscrowd box (score 0.90)
+        #           Under COCO protocol, detections matching iscrowd=1 GT are neither TP nor FP (ignored from matching count).
         # Image 30: 1 false positive prediction on background (score 0.80)
+        #           No GT -> strictly FP.
         preds = [
             # Image 10
             {
@@ -294,11 +297,18 @@ def test_coco_map_edge_cases():
             device="cpu", conf_thres=0.30, label2cat={1: 1}
         )
         
-        # COCO standard evaluation handles iscrowd and duplicate boxes:
-        # Result should be computed stably without crashes or NaN
-        assert not np.isnan(map_std)
-        assert not np.isnan(map_03)
+        # Quantitative COCO protocol analysis for Category 1 (palm):
+        # GT non-crowd = 1 (Image 10)
+        # Total positive detections for palm:
+        # 1. Image 10, pred 0 (score 0.95): matches GT 1 -> TP (Recall = 1.0, Precision = 1.0)
+        # 2. Image 20, pred 0 (score 0.90): matches iscrowd=1 GT -> COCOeval ignores this match (neither TP nor FP)
+        # 3. Image 10, pred 1 (score 0.85): duplicate prediction -> FP (Recall = 1.0, Precision = 1/2 = 0.5)
+        # 4. Image 30, pred 0 (score 0.80): background false positive -> FP (Recall = 1.0, Precision = 1/3 = 0.333)
+        # Since Recall reaches 1.0 at rank 1 with Precision=1.0, the max precision across recall threshold [0..1] is 1.0.
+        # Thus standard COCO AP = 1.0 for this category.
         print(f"[COCOeval Edge-Case Result] mAP@0.5:0.95 = {map_std:.4f}, mAP@0.3 = {map_03:.4f}")
+        assert abs(map_std - 1.0) < 1e-4, f"Expected AP=1.0 when top prediction matches GT at 100% recall, got {map_std}"
+        assert abs(map_03 - 1.0) < 1e-4, f"Expected AP@0.3=1.0, got {map_03}"
         print("[PASS] test_coco_map_edge_cases (iscrowd, duplicate detections, background images verified!)")
     finally:
         Path(temp_json_path).unlink(missing_ok=True)
