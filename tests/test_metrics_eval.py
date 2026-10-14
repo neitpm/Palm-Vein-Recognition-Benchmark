@@ -1,5 +1,8 @@
 import sys
 from pathlib import Path
+import json
+import tempfile
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
@@ -8,10 +11,12 @@ import torch
 import numpy as np
 import pytest
 from unittest.mock import MagicMock
+from pycocotools.coco import COCO
 
 from models_fasterrcnn_resnet50.src.metrics.prf import detection_prf_cm as frcnn_prf
 from models_ssdlite_mobilenetv3.src.metrics.prf import detection_prf_cm as ssd_prf
 from models_fasterrcnn_resnet50.src.metrics.coco_eval import coco_map as frcnn_coco_map
+from models_ssdlite_mobilenetv3.src.metrics.coco_eval import coco_map as ssd_coco_map
 
 
 class MockModel(torch.nn.Module):
@@ -112,54 +117,116 @@ def test_ssd_prf_multi_batch():
     print("[PASS] test_ssd_prf_multi_batch")
 
 
-def test_frcnn_coco_map_all_batches():
-    # Verify that coco_map actually aggregates results across ALL batches rather than just the last batch
-    coco_gt = MagicMock()
-    coco_gt.imgs = {
-        101: {'width': 100, 'height': 100},
-        102: {'width': 100, 'height': 100},
+def test_coco_map_full_cocoeval():
+    """Comprehensive test verifying actual COCOeval calculation, coordinate scaling,
+    category mapping, multi-box predictions, and empty prediction handling."""
+    
+    # 1. Create a temporary synthetic COCO dataset with 3 images
+    # Image 1 (id: 1): 200x200, GT box: [20, 20, 60, 60] (w=40, h=40), category_id: 1
+    # Image 2 (id: 2): 400x200, GT box: [40, 20, 100, 60] (w=60, h=40), category_id: 1
+    # Image 3 (id: 3): 100x100, GT box: [10, 10, 50, 50] (w=40, h=40), category_id: 1
+    coco_dict = {
+        "images": [
+            {"id": 1, "width": 200, "height": 200},
+            {"id": 2, "width": 400, "height": 200},
+            {"id": 3, "width": 100, "height": 100},
+        ],
+        "annotations": [
+            {"id": 1, "image_id": 1, "category_id": 1, "bbox": [20, 20, 40, 40], "area": 1600, "iscrowd": 0},
+            {"id": 2, "image_id": 2, "category_id": 1, "bbox": [40, 20, 60, 40], "area": 2400, "iscrowd": 0},
+            {"id": 3, "image_id": 3, "category_id": 1, "bbox": [10, 10, 40, 40], "area": 1600, "iscrowd": 0},
+        ],
+        "categories": [
+            {"id": 1, "name": "palm"}
+        ]
     }
     
-    # 2 batches with 1 image each
-    batch1_imgs = [torch.zeros(3, 100, 100)]
-    batch1_tgts = [{"image_id": torch.tensor([101])}]
-    
-    batch2_imgs = [torch.zeros(3, 100, 100)]
-    batch2_tgts = [{"image_id": torch.tensor([102])}]
-    
-    preds = [
-        {"boxes": torch.tensor([[10., 10., 50., 50.]]), "scores": torch.tensor([0.9]), "labels": torch.tensor([1])},
-        {"boxes": torch.tensor([[20., 20., 60., 60.]]), "scores": torch.tensor([0.85]), "labels": torch.tensor([1])},
-    ]
-    
-    mock_loader = [
-        (batch1_imgs, batch1_tgts),
-        (batch2_imgs, batch2_tgts)
-    ]
-    
-    model = MockModel(preds)
-    
-    # Intercept loadRes to check how many detections were aggregated
-    recorded_results = []
-    def mock_loadRes(res):
-        recorded_results.extend(res)
-        mock_dt = MagicMock()
-        return mock_dt
+    with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
+        json.dump(coco_dict, f)
+        temp_json_path = f.name
         
-    coco_gt.loadRes = mock_loadRes
-    
-    # Run coco_map
-    map_std, map_03 = frcnn_coco_map(model, mock_loader, coco_gt, device="cpu", conf_thres=0.5, label2cat={1: 1})
-    
-    # Must have aggregated predictions for both image 101 AND 102
-    assert len(recorded_results) == 2, f"Expected 2 aggregated results, got {len(recorded_results)}"
-    image_ids = {r["image_id"] for r in recorded_results}
-    assert image_ids == {101, 102}, f"Expected image_ids {{101, 102}}, got {image_ids}"
-    print("[PASS] test_frcnn_coco_map_all_batches")
+    try:
+        coco_gt = COCO(temp_json_path)
+        
+        # Batch 1: Image 1 & Image 2 (both input tensors resized to 100x100)
+        # Note: orig_w, orig_h for Image 2 is 400x200, input is 100x100 -> sx = 4.0, sy = 2.0
+        # In input space (100x100):
+        # Image 1 (orig 200x200 -> sx=2, sy=2):
+        #   GT [20, 20, 60, 60] in orig corresponds to [10, 10, 30, 30] in input space
+        # Image 2 (orig 400x200 -> sx=4, sy=2):
+        #   GT [40, 20, 100, 60] corresponds to [10, 10, 25, 30] in input space
+        batch1_imgs = [torch.zeros(3, 100, 100), torch.zeros(3, 100, 100)]
+        batch1_tgts = [{"image_id": torch.tensor([1])}, {"image_id": torch.tensor([2])}]
+        
+        # Batch 2: Image 3 (orig 100x100, input 100x100 -> sx=1, sy=1)
+        batch2_imgs = [torch.zeros(3, 100, 100)]
+        batch2_tgts = [{"image_id": torch.tensor([3])}]
+        
+        mock_loader = [
+            (batch1_imgs, batch1_tgts),
+            (batch2_imgs, batch2_tgts)
+        ]
+        
+        # Predictions:
+        # Pred 1 (Image 1): Box [10, 10, 30, 30] -> scaled to [20, 20, 60, 60] (Perfect match IoU=1.0)
+        # Pred 2 (Image 2): Box [10, 10, 25, 30] -> scaled to [40, 20, 100, 60] (Perfect match IoU=1.0)
+        #                   Plus a low score box [50, 50, 70, 70] (score 0.1 < conf_thres 0.3) -> should be filtered
+        # Pred 3 (Image 3): No detection (empty box)
+        preds = [
+            # Image 1
+            {
+                "boxes": torch.tensor([[10., 10., 30., 30.]]),
+                "scores": torch.tensor([0.95]),
+                "labels": torch.tensor([1]) # label 1 -> maps to category 1
+            },
+            # Image 2
+            {
+                "boxes": torch.tensor([[10., 10., 25., 30.], [50., 50., 70., 70.]]),
+                "scores": torch.tensor([0.90, 0.10]),
+                "labels": torch.tensor([1, 1])
+            },
+            # Image 3
+            {
+                "boxes": torch.zeros((0, 4)),
+                "scores": torch.zeros(0),
+                "labels": torch.zeros(0, dtype=torch.int64)
+            }
+        ]
+        
+        # Run Faster R-CNN coco_map
+        model_frcnn = MockModel(preds)
+        map_std, map_03 = frcnn_coco_map(
+            model_frcnn, mock_loader, coco_gt, 
+            device="cpu", conf_thres=0.30, label2cat={1: 1}
+        )
+        
+        # Image 1: 1 GT, 1 TP (IoU 1.0) -> AP = 1.0
+        # Image 2: 1 GT, 1 TP (IoU 1.0) -> AP = 1.0
+        # Image 3: 1 GT, 0 TP -> AP = 0.0
+        # Average Recall = 2 / 3 ≈ 0.667
+        # Overall mAP@0.5:0.95 = 2 / 3 ≈ 0.6667
+        # Overall mAP@0.3 = 2 / 3 ≈ 0.6667
+        print(f"[COCOeval FRCNN Result] mAP@0.5:0.95 = {map_std:.4f}, mAP@0.3 = {map_03:.4f}")
+        assert abs(map_std - (2.0 / 3.0)) < 1e-2, f"Expected mAP ~ 0.6667, got {map_std}"
+        assert abs(map_03 - (2.0 / 3.0)) < 1e-2, f"Expected mAP@0.3 ~ 0.6667, got {map_03}"
+        
+        # Run SSDLite coco_map with identical loader
+        model_ssd = MockModel(preds)
+        map_std_ssd, map_03_ssd = ssd_coco_map(
+            model_ssd, mock_loader, coco_gt, 
+            device="cpu", conf_thres=0.30, label2cat={1: 1}
+        )
+        print(f"[COCOeval SSD Result] mAP@0.5:0.95 = {map_std_ssd:.4f}, mAP@0.3 = {map_03_ssd:.4f}")
+        assert abs(map_std_ssd - (2.0 / 3.0)) < 1e-2, f"Expected SSD mAP ~ 0.6667, got {map_std_ssd}"
+        assert abs(map_03_ssd - (2.0 / 3.0)) < 1e-2, f"Expected SSD mAP@0.3 ~ 0.6667, got {map_03_ssd}"
+        
+        print("[PASS] test_coco_map_full_cocoeval (Coordinate scaling, category mapping, multi-box filtering verified!)")
+    finally:
+        Path(temp_json_path).unlink(missing_ok=True)
 
 
 if __name__ == "__main__":
     test_frcnn_prf_multi_batch()
     test_ssd_prf_multi_batch()
-    test_frcnn_coco_map_all_batches()
+    test_coco_map_full_cocoeval()
     print("\nALL EVALUATION INTEGRITY TESTS PASSED!")
