@@ -43,8 +43,24 @@ flowchart TD
 ### Architectural Comparison Diagram
 ![Comparative Model Pipelines](benchmark_comparison/dual_architecture_comparison.png)
 
-### Deep Neural Network Layer & Tensor Flow Breakdown
-![Deep Neural Network Layer Architectures](benchmark_comparison/detailed_model_layers_diagram.png)
+### Deep Neural Network 3D Layer Breakdown (PlotNeuralNet Style)
+
+Below are the exact 3D layer diagrams detailing tensors, convolutions, residual connections, and attention mechanisms for all backbones and detectors:
+
+#### 1. MobileNetV3 Inverted Residual Bottleneck Block (with Squeeze-and-Excitation)
+![MobileNetV3 Block](docs/figures/1_mobilenetv3_bneck_block.png)
+
+#### 2. SSDLite with MobileNetV3 Backbone & Detection Head
+![SSDLite MobileNetV3 Architecture](docs/figures/2_ssdlite_mobilenetv3_architecture.png)
+
+#### 3. EfficientNet-B0 Backbone Layer-by-Layer Tensor Flow
+![EfficientNet-B0 Backbone](docs/figures/3_efficientnet_b0_backbone.png)
+
+#### 4. Faster R-CNN with ResNet-50-FPN Architecture (RPN + RoIAlign)
+![Faster R-CNN ResNet-50 FPN](docs/figures/4_fasterrcnn_resnet50_fpn.png)
+
+#### 5. Faster R-CNN with EfficientNet-B0-FPN Architecture
+![Faster R-CNN EfficientNet-B0 FPN](docs/figures/5_fasterrcnn_efficientnetb0_fpn.png)
 
 ---
 
