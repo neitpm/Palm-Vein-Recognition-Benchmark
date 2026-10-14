@@ -268,12 +268,6 @@ def render_fig3_efficientnet_backbone(out_path="docs/figures/3_efficientnet_b0_b
     print(f"[OK] Rendered {out_path}")
 
 
-    plt.tight_layout()
-    Path(out_path).parent.mkdir(parents=True, exist_ok=True)
-    plt.savefig(out_path, dpi=300)
-    plt.close()
-    print(f"[OK] Rendered {out_path}")
-
 
 def render_fig4_fasterrcnn_resnet50(out_path="docs/figures/4_fasterrcnn_resnet50_fpn.png"):
     fig, ax = plt.subplots(figsize=(12, 6.2), dpi=300, facecolor="#ffffff")
