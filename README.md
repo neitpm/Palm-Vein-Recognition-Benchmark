@@ -43,6 +43,9 @@ flowchart TD
 ### Architectural Comparison Diagram
 ![Comparative Model Pipelines](benchmark_comparison/dual_architecture_comparison.png)
 
+### Deep Neural Network Layer & Tensor Flow Breakdown
+![Deep Neural Network Layer Architectures](benchmark_comparison/detailed_model_layers_diagram.png)
+
 ---
 
 ## 3. End-to-End Palm-Vein Recognition Architecture
