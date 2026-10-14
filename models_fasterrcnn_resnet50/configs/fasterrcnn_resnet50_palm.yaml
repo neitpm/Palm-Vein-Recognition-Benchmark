@@ -1,5 +1,5 @@
-# Đường dẫn 
-root_path: "D:/PMT_Paper_Fasterrcnn-resnet50/src/dataset/roboflow_dl1"
+# Dataset Path (default relative to module root or set to your custom COCO path)
+root_path: "src/dataset/roboflow_dl"
 train_ann: "${root_path}/train/_annotations.coco.json"
 val_ann:   "${root_path}/valid/_annotations.coco.json"
 

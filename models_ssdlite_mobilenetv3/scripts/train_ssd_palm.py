@@ -56,7 +56,12 @@ def load_cfg(path="configs/ssd_palm.yaml"):
 
 
 def main():
-    cfg = load_cfg()
+    import argparse
+    parser = argparse.ArgumentParser(description="Train SSDLite MobileNetV3 Palm ROI")
+    parser.add_argument("--config", default="configs/ssd_palm.yaml", help="Path to config YAML")
+    args = parser.parse_args()
+
+    cfg = load_cfg(args.config)
     seed_everything(cfg.get("seed", 42))
     device = get_device()
     use_amp = (device.type == "cuda")

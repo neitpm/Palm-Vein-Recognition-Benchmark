@@ -151,7 +151,12 @@ def plot_and_save_curves(plots_dir, train_losses, val_losses, maps, maps03, prec
         plt.close(fig)
 
 def main():
-    cfg = load_cfg()
+    import argparse
+    parser = argparse.ArgumentParser(description="Train Faster R-CNN ResNet-50 Palm ROI")
+    parser.add_argument("--config", default="configs/fasterrcnn_resnet50_palm.yaml", help="Path to config YAML")
+    args = parser.parse_args()
+
+    cfg = load_cfg(args.config)
     seed_everything(cfg.get("seed", 42))
     device = get_device()
     use_amp = (device.type == "cuda")

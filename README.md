@@ -80,24 +80,25 @@ flowchart LR
 ![End-to-End Vein Architecture](models_ssdlite_mobilenetv3/docs/images/pipeline_architecture.png)
 
 - **Vein Enhancement**: Grayscale conversion, resized to $224 \times 224$, CLAHE (`clipLimit=2.5`, `tileGrid=(8,8)`), and Gaussian smoothing to enhance vascular contrast.
-- **PalmVeinNet (ArcFace Metric Learning)**: Architecture projects preprocessed ROI into a 512-d $L_2$-normalized hypersphere using an additive angular margin head ($m=0.5, s=30$).
-- **Biometric Matcher**: Cosine similarity comparator supporting 1:1 Verification and 1:N Identification templates.
+- **PalmVeinNet & ArcFace Prototype**: Defines the architecture for metric learning (`PalmVeinNet`). In the current inference prototype (`num_classes=None`), feature vectors are extracted directly from the ImageNet-pretrained backbone without fine-tuned biometric weights; the ArcFace angular margin head is defined as an architectural template for future training on multi-subject datasets.
+- **Biometric Matcher**: Cosine similarity comparator supporting 1:1 Verification and 1:N Identification templates on extracted embeddings.
 
 ---
 
 ## 5. Quantitative Benchmark & Results (Verified from Tracked Artifacts)
 
-The following metrics are loaded directly from the tracked evaluation logs (`best_loss_metrics.json` and `metrics_summary.json` on the validation splits):
+To ensure a scientifically fair comparison, both models are evaluated under the **identical Best-Validation-Loss checkpoint criterion** on the same validation split (`output_newdataset/`):
 
-| Metric | SSDLite (MobileNetV3) [`newdataset`] | Faster R-CNN (EfficientNet/ResNet) [`newdataset`] | Source Artifact |
+| Metric | SSDLite (MobileNetV3) [Best-Loss Ep 6] | Faster R-CNN (Two-Stage) [Best-Loss Ep 19] | Source Artifact |
 | :--- | :---: | :---: | :--- |
-| **mAP@0.5:0.95 (COCO)** | **0.6691 (66.9%)** | **0.6873 (68.7%)** | `checkpoints/best_loss_metrics.json` / `metrics_summary.json` |
+| **mAP@0.5:0.95 (COCO)** | **0.6691 (66.9%)** | **0.6846 (68.5%)** | `checkpoints/best_loss_metrics.json` / `metrics_epoch.json` (Ep 19) |
 | **mAP@0.3** | **0.9889 (98.9%)** | **1.0000 (100.0%)** | Tracked evaluation logs |
-| **Precision** | **0.9986 (99.9%)** | **0.3571 (35.7% avg)** | Direct box predictions vs. RPN proposals |
-| **Recall** | **1.0000 (100.0%)** | **0.5000 (50.0% avg)** | Coverage of target palm boxes |
-| **F1-Score** | **0.9993 (99.9%)** | **0.4167 (41.7% avg)** | Harmonic mean of P and R |
+| **Precision** | **0.9986 (99.9%)** | **0.3571 (35.7%)** | Pointwise prediction vs. RPN proposal redundancy |
+| **Recall** | **1.0000 (100.0%)** | **0.5000 (50.0%)** | Palm bounding box coverage |
+| **F1-Score** | **0.9993 (99.9%)** | **0.4167 (41.7%)** | Harmonic mean of P and R at Best-Loss |
 
-> *Note on earlier experiments:* On the preliminary holdout run (`output/`), SSDLite achieved `0.8508 mAP@0.5:0.95`, whereas on the expanded dataset (`output_newdataset/`), the model converged to `0.6691 mAP`. Faster R-CNN achieves high coarse overlap (`mAP@0.3 = 1.0`), but produces lower precision due to redundant proposal generation for a single-class object.
+> *Benchmark Selection Rationale:*  
+> Evaluating both models at their respective minimum validation loss checkpoints (`Epoch 6` for SSDLite with `val_loss = 1.401`, `Epoch 19` for Faster R-CNN with `val_loss = 0.063`) guarantees that metrics reflect optimal generalization without overfitting. While Faster R-CNN marginally edges out SSDLite in bounding box overlap (`mAP@0.5:0.95` of `68.5%` vs `66.9%`), SSDLite achieves vastly superior Precision (`99.9%` vs `35.7%`) because it does not suffer from redundant RPN proposal generation on single-class hand detection.
 
 ### Artifact-Driven Benchmark Chart
 ![Model Comparison Chart](benchmark_comparison/model_comparison_chart.png)
