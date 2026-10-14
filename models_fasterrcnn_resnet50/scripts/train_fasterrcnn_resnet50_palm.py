@@ -30,10 +30,13 @@ def load_cfg(path="configs/fasterrcnn_resnet50_palm.yaml"):
     p = Path(path)
     if not p.is_absolute(): p = PROJECT_ROOT / p
     cfg = yaml.safe_load(p.read_text(encoding="utf-8"))
-    root = cfg.get("root_path","")
-    for k in ["train_ann","val_ann","test_ann"]:
-        if isinstance(cfg.get(k), str):
-            cfg[k] = cfg[k].replace("${root_path}", root)
+    raw_root = cfg.get("root_path", "")
+    root_resolved = (PROJECT_ROOT / raw_root).resolve()
+    cfg["root_path"] = str(root_resolved)
+    cfg["train_ann"] = str(root_resolved / "train" / "_annotations.coco.json")
+    cfg["val_ann"]   = str(root_resolved / "valid" / "_annotations.coco.json")
+    if "test_ann" in cfg:
+        cfg["test_ann"] = str(root_resolved / "test" / "_annotations.coco.json")
     return cfg
 
 def build_model(num_classes: int, min_size=None, max_size=None, trainable_backbone_layers=3, freeze_backbone=False):

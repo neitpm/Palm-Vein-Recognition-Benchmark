@@ -1,5 +1,5 @@
-# Dataset Path (points to shared root data/palm_dataset)
-root_path: "../../data/palm_dataset"
+# Dataset Path (points to shared root data/palm_dataset relative to module root)
+root_path: "../data/palm_dataset"
 train_ann: "${root_path}/train/_annotations.coco.json"
 val_ann:   "${root_path}/valid/_annotations.coco.json"
 
