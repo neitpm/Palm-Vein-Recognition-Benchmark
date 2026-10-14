@@ -98,8 +98,8 @@ To ensure a scientifically fair comparison, both models are evaluated under the 
 | **F1-Score** | **0.9993 (99.9%)** | **0.4167 (41.7%)** | Harmonic mean of positive class P and R |
 
 > *Methodological & Evaluation Notes:*  
-> 1. **Artifact Provenance:** Faster R-CNN metrics above correspond to the `EfficientNet-B0-FPN` backbone experiment (`output_fasterrcnn_efficientnetb0_palm_newdataset`), where minimum validation loss was achieved at `Epoch 19` (`val_loss = 0.0631`). The `ResNet-50-FPN` experiment (`output_newdataset`) tracked across 29 epochs reached `best_loss = 0.1040` with `best_map = 0.8000`.
-> 2. **Evaluation Metric Alignment:** Both models evaluate Precision, Recall, and F1 specifically on the positive class (`palm`, class 1) using optimal bipartite-style matching (matching predictions to the highest-IoU unassigned ground-truth box).
+> 1. **Artifact Provenance & Historical Logs:** The metrics reported in the table above reflect historical run artifacts recorded during earlier checkpoint experiments (`output_newdataset/` and `output_fasterrcnn_efficientnetb0_palm_newdataset/`). Faster R-CNN metrics correspond to `EfficientNet-B0-FPN` at `Epoch 19` (`val_loss = 0.0631`), while the ResNet-50-FPN baseline reached `best_loss = 0.1040` with `best_map = 0.8000`. Following the latest batch-level evaluation bug fixes in commit `2c0859f`, fresh full-dataset validation runs should be executed to refresh absolute numbers.
+> 2. **Evaluation Metric Alignment:** Both models evaluate Precision, Recall, and F1 specifically on the positive class (`palm`, class 1) using greedy IoU matching (iteratively matching predicted boxes sorted by confidence against the highest-IoU unassigned ground-truth box above threshold).
 > 3. **Preprocessing Caveat:** SSDLite resizes images to a fixed $320\times 320$ with ImageNet normalization, while Faster R-CNN evaluates multi-scale tensors scaled to $[0, 1]$. Consequently, the reported results reflect differences in both model architecture and respective preprocessing pipelines.
 
 ### Artifact-Driven Benchmark Chart
