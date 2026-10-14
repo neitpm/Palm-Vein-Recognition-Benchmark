@@ -314,8 +314,15 @@ def test_coco_map_edge_cases():
         direct_eval = COCOeval(coco_gt, coco_dt, "bbox")
         direct_eval.evaluate()
         
-        # Find eval results by image_id
-        eval_by_img = {e["image_id"]: e for e in direct_eval.evalImgs if e is not None and e["aRng"] == [0, 1e5**2]}
+        # Find eval results filtered precisely by category_id, maxDet, and aRng:
+        eval_by_img = {
+            e["image_id"]: e 
+            for e in direct_eval.evalImgs 
+            if e is not None 
+            and e.get("category_id") == 1 
+            and e.get("maxDet") == 100 
+            and e.get("aRng") == [0, 1e5**2]
+        }
         
         # Verify Image 10 (duplicate detection handling):
         e10 = eval_by_img[10]
