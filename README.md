@@ -98,7 +98,7 @@ To ensure a scientifically fair comparison, both models are evaluated under the 
 | **F1-Score** | **0.9993 (99.9%)** | **0.4167 (41.7%)** | Harmonic mean of P and R at Best-Loss |
 
 > *Benchmark Selection Rationale:*  
-> Evaluating both models at their respective minimum validation loss checkpoints (`Epoch 6` for SSDLite with `val_loss = 1.401`, `Epoch 19` for Faster R-CNN with `val_loss = 0.063`) guarantees that metrics reflect optimal generalization without overfitting. While Faster R-CNN marginally edges out SSDLite in bounding box overlap (`mAP@0.5:0.95` of `68.5%` vs `66.9%`), SSDLite achieves vastly superior Precision (`99.9%` vs `35.7%`) because it does not suffer from redundant RPN proposal generation on single-class hand detection.
+> Both models are reported at their respective minimum validation loss checkpoints (`Epoch 6` for SSDLite with `val_loss = 1.401`, `Epoch 19` for Faster R-CNN with `val_loss = 0.063`). While minimum validation loss is a standard early-stopping heuristic, it does not guarantee optimal out-of-distribution generalization. While Faster R-CNN achieves higher bounding box overlap (`mAP@0.5:0.95` of `68.5%` vs `66.9%`), SSDLite yields higher observed Precision (`99.9%` vs `35.7%`) on this evaluation split, hypothesized to result from single-stage direct classification versus dense candidate proposal generation in two-stage RPN heads.
 
 ### Artifact-Driven Benchmark Chart
 ![Model Comparison Chart](benchmark_comparison/model_comparison_chart.png)
@@ -131,18 +131,27 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-### 7.2. Training Detectors from Scratch
-Since weights (`.pth`) and datasets are excluded from git tracking to prevent repository bloat:
+### 7.2. Downloading the Shared Dataset
+Both models share a unified dataset stored in `data/palm_dataset`:
+```bash
+# Export your Roboflow credentials (version 5 is used by default)
+export ROBOFLOW_API_KEY="your_api_key"
+export ROBOFLOW_WORKSPACE="your_workspace"
+export ROBOFLOW_PROJECT="your_project_id"
+
+# Download the shared COCO dataset into data/palm_dataset
+python scripts/download_shared_dataset.py
+```
+
+### 7.3. Training Detectors from Scratch
+With the dataset in `data/palm_dataset`, both models train using their synchronized configs:
 
 ```bash
-# 1. Download dataset (requires Roboflow account or custom COCO annotations)
+# 1. Train SSDLite detector
 cd models_ssdlite_mobilenetv3
-python src/dataset/download_data.py
-
-# 2. Train SSDLite detector
 python scripts/train_ssd_palm.py --config configs/ssd_palm.yaml
 
-# 3. Train Faster R-CNN detector
+# 2. Train Faster R-CNN detector
 cd ../models_fasterrcnn_resnet50
 python scripts/train_fasterrcnn_resnet50_palm.py --config configs/fasterrcnn_resnet50_palm.yaml
 ```

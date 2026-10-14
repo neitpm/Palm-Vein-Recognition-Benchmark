@@ -1,5 +1,5 @@
-# Dataset Path (default relative to module root or set to your custom COCO path)
-root_path: "src/dataset/roboflow_dl"
+# Dataset Path (points to shared root data/palm_dataset)
+root_path: "../data/palm_dataset"
 train_ann: "${root_path}/train/_annotations.coco.json"
 val_ann:   "${root_path}/valid/_annotations.coco.json"
 
