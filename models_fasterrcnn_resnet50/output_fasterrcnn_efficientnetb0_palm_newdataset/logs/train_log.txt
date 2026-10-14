@@ -1,0 +1,25 @@
+epoch | train_loss | val_loss | mAP | mAP@0.3 | precision | recall | f1
+EP001 | train_loss=0.1479 | val_loss=0.0951 | mAP=0.4573 | mAP@0.3=1.0000 | P=0.2500 | R=0.5000 | F1=0.3333
+EP002 | train_loss=0.0880 | val_loss=0.0843 | mAP=0.5208 | mAP@0.3=1.0000 | P=0.3125 | R=0.5000 | F1=0.3846
+EP003 | train_loss=0.0782 | val_loss=0.0759 | mAP=0.5860 | mAP@0.3=1.0000 | P=0.2778 | R=0.5000 | F1=0.3571
+EP004 | train_loss=0.0726 | val_loss=0.0733 | mAP=0.5577 | mAP@0.3=1.0000 | P=0.3125 | R=0.5000 | F1=0.3846
+EP005 | train_loss=0.0699 | val_loss=0.0729 | mAP=0.4820 | mAP@0.3=1.0000 | P=0.3125 | R=0.5000 | F1=0.3846
+EP006 | train_loss=0.0676 | val_loss=0.0731 | mAP=0.5356 | mAP@0.3=1.0000 | P=0.2778 | R=0.5000 | F1=0.3571
+EP007 | train_loss=0.0654 | val_loss=0.0705 | mAP=0.5566 | mAP@0.3=1.0000 | P=0.3125 | R=0.5000 | F1=0.3846
+EP008 | train_loss=0.0641 | val_loss=0.0714 | mAP=0.5725 | mAP@0.3=1.0000 | P=0.3125 | R=0.5000 | F1=0.3846
+EP009 | train_loss=0.0632 | val_loss=0.0695 | mAP=0.5725 | mAP@0.3=1.0000 | P=0.2778 | R=0.5000 | F1=0.3571
+EP010 | train_loss=0.0618 | val_loss=0.0688 | mAP=0.6125 | mAP@0.3=1.0000 | P=0.3571 | R=0.5000 | F1=0.4167
+EP011 | train_loss=0.0611 | val_loss=0.0688 | mAP=0.5908 | mAP@0.3=1.0000 | P=0.3571 | R=0.5000 | F1=0.4167
+EP012 | train_loss=0.0602 | val_loss=0.0676 | mAP=0.6246 | mAP@0.3=1.0000 | P=0.2778 | R=0.5000 | F1=0.3571
+EP013 | train_loss=0.0591 | val_loss=0.0685 | mAP=0.6225 | mAP@0.3=1.0000 | P=0.3125 | R=0.5000 | F1=0.3846
+EP014 | train_loss=0.0581 | val_loss=0.0692 | mAP=0.5887 | mAP@0.3=1.0000 | P=0.4167 | R=0.5000 | F1=0.4545
+EP015 | train_loss=0.0573 | val_loss=0.0658 | mAP=0.6404 | mAP@0.3=1.0000 | P=0.3125 | R=0.5000 | F1=0.3846
+EP016 | train_loss=0.0570 | val_loss=0.0675 | mAP=0.6525 | mAP@0.3=1.0000 | P=0.3571 | R=0.5000 | F1=0.4167
+EP017 | train_loss=0.0564 | val_loss=0.0668 | mAP=0.6414 | mAP@0.3=1.0000 | P=0.2083 | R=0.5000 | F1=0.2941
+EP018 | train_loss=0.0555 | val_loss=0.0663 | mAP=0.6404 | mAP@0.3=1.0000 | P=0.4167 | R=0.5000 | F1=0.4545
+EP019 | train_loss=0.0553 | val_loss=0.0631 | mAP=0.6846 | mAP@0.3=1.0000 | P=0.3571 | R=0.5000 | F1=0.4167
+EP020 | train_loss=0.0550 | val_loss=0.0657 | mAP=0.6525 | mAP@0.3=1.0000 | P=0.3571 | R=0.5000 | F1=0.4167
+EP021 | train_loss=0.0546 | val_loss=0.0648 | mAP=0.6525 | mAP@0.3=1.0000 | P=0.4167 | R=0.5000 | F1=0.4545
+EP022 | train_loss=0.0543 | val_loss=0.0653 | mAP=0.6525 | mAP@0.3=1.0000 | P=0.3125 | R=0.5000 | F1=0.3846
+EP023 | train_loss=0.0543 | val_loss=0.0652 | mAP=0.6525 | mAP@0.3=1.0000 | P=0.3125 | R=0.5000 | F1=0.3846
+EARLY_STOPPING at epoch 24: val_loss did not improve for 5 epochs (patience=5).\n

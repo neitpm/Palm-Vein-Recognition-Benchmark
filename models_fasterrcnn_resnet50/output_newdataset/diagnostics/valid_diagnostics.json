@@ -1,0 +1,18 @@
+{
+  "used_cat_ids": [
+    1
+  ],
+  "cat2label": {
+    "1": 1
+  },
+  "label2cat": {
+    "1": 1
+  },
+  "num_classes": 2,
+  "bbox_count": {
+    "1": 709
+  },
+  "sample_label_dist": {
+    "1": 8
+  }
+}

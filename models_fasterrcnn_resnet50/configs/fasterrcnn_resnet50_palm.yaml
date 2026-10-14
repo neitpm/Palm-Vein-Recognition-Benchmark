@@ -1,0 +1,31 @@
+# Đường dẫn 
+root_path: "D:/PMT_Paper_Fasterrcnn-resnet50/src/dataset/roboflow_dl1"
+train_ann: "${root_path}/train/_annotations.coco.json"
+val_ann:   "${root_path}/valid/_annotations.coco.json"
+
+# DataLoader
+batch_train: 8       # tăng/giảm tuỳ GPU; nhỏ hơn 16 nếu OOM, lớn hơn nếu có VRAM
+batch_val: 8
+num_workers: 6       # tăng lên (6 or 8) tùy CPU; 0 chặn I/O -> chậm
+pin_memory: true
+
+# Train
+epochs: 200           # giảm từ 200 -> 50 (hoặc 30) để thử
+lr: 1.0e-4
+step_size: 20
+gamma: 0.1
+seed: 42
+
+# Model size / speed tradeoff
+min_size: 600        # giảm kích thước ảnh (mặc định 800); nhanh hơn
+max_size: 1000       # giảm max (mặc định 1333)
+best_select: "map"
+
+
+# Eval
+conf_eval: 0.30
+
+# Save
+save_dir: "output_fasterrcnn_efficientnetb0_palm_newdataset"
+save_pred_map: true
+save_pred_map_split: "valid"   # valid|test

@@ -1,0 +1,10 @@
+torch>=2.2
+torchvision>=0.17
+tqdm
+albumentations>=1.4
+opencv-python
+pycocotools-windows; platform_system=="Windows"
+pycocotools; platform_system!="Windows"
+scikit-learn
+numpy
+PyYAML

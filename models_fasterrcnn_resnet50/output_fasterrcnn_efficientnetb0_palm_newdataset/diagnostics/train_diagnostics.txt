@@ -1,0 +1,6 @@
+[train] used_cat_ids: [1]
+[train] cat2label: {1: 1}
+[train] label2cat: {1: 1}
+[train] num_classes: 2
+[train] bbox_count: {1: 5091}
+[train] sample_label_dist: {1: 8}

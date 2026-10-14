@@ -1,0 +1,6 @@
+[valid] used_cat_ids: [1]
+[valid] cat2label: {1: 1}
+[valid] label2cat: {1: 1}
+[valid] num_classes: 2
+[valid] bbox_count: {1: 709}
+[valid] sample_label_dist: {1: 8}

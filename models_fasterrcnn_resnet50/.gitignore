@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.venv/
+.env
+__init__.py
+best_loss.pth
+best_model.pth
+# Jupyter
+.ipynb_checkpoints/
+checkpoints
+# OS
+.DS_Store
+Thumbs.db
+
+# LaTeX 
+*.aux
+*.bbl
+*.blg
+*.out
+*.toc
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+
+# Logs & outputs
+
+# COCO/Images cache
+*.cache
+
+#dataset
+roboflow_dl
+roboflow_dl1

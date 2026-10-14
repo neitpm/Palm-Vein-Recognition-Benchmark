@@ -1,0 +1,23 @@
+# Python & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+.env
+
+# Checkpoints lớn (khuyên dùng Git LFS hoặc Release)
+*.pth
+*.pt
+*.bin
+
+# Datasets
+roboflow_dl/
+roboflow_dl1/
+data/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

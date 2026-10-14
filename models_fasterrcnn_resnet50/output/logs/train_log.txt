@@ -1,0 +1,16 @@
+epoch | train_loss | val_loss | mAP | mAP@0.3 | precision | recall | f1
+EP001 | train_loss=0.1551 | val_loss=0.1282 | mAP=0.3698 | mAP@0.3=0.9857 | P=0.1333 | R=0.5000 | F1=0.2105
+EP002 | train_loss=0.1080 | val_loss=0.0962 | mAP=0.4688 | mAP@0.3=1.0000 | P=0.2353 | R=0.5000 | F1=0.3200
+EP003 | train_loss=0.0890 | val_loss=0.0857 | mAP=0.5539 | mAP@0.3=1.0000 | P=0.3636 | R=0.5000 | F1=0.4211
+EP004 | train_loss=0.0831 | val_loss=0.0823 | mAP=0.5696 | mAP@0.3=1.0000 | P=0.4444 | R=0.5000 | F1=0.4706
+EP005 | train_loss=0.0808 | val_loss=0.0807 | mAP=0.5559 | mAP@0.3=1.0000 | P=1.0000 | R=1.0000 | F1=1.0000
+EP006 | train_loss=0.0794 | val_loss=0.0798 | mAP=0.5749 | mAP@0.3=1.0000 | P=0.4444 | R=0.5000 | F1=0.4706
+EP007 | train_loss=0.0788 | val_loss=0.0794 | mAP=0.5887 | mAP@0.3=1.0000 | P=0.4444 | R=0.5000 | F1=0.4706
+EP008 | train_loss=0.0778 | val_loss=0.0781 | mAP=0.6134 | mAP@0.3=1.0000 | P=0.4444 | R=0.5000 | F1=0.4706
+EP009 | train_loss=0.0770 | val_loss=0.0772 | mAP=0.6339 | mAP@0.3=1.0000 | P=0.4444 | R=0.5000 | F1=0.4706
+EP010 | train_loss=0.0767 | val_loss=0.0773 | mAP=0.6236 | mAP@0.3=1.0000 | P=0.4444 | R=0.5000 | F1=0.4706
+EP011 | train_loss=0.0761 | val_loss=0.0766 | mAP=0.6741 | mAP@0.3=1.0000 | P=0.4444 | R=0.5000 | F1=0.4706
+EP012 | train_loss=0.0754 | val_loss=0.0775 | mAP=0.6391 | mAP@0.3=1.0000 | P=1.0000 | R=1.0000 | F1=1.0000
+EP013 | train_loss=0.0751 | val_loss=0.0752 | mAP=0.6636 | mAP@0.3=1.0000 | P=1.0000 | R=1.0000 | F1=1.0000
+EP014 | train_loss=0.0742 | val_loss=0.0745 | mAP=0.6780 | mAP@0.3=1.0000 | P=1.0000 | R=1.0000 | F1=1.0000
+EP001 | train_loss=0.1129 | val_loss=0.0782 | mAP=0.5120 | mAP@0.3=1.0000 | P=0.2000 | R=0.5000 | F1=0.2857
