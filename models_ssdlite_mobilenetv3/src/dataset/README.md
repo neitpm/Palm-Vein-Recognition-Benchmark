@@ -1,17 +1,19 @@
-# Dataset
-## Install
-$ pip install roboflow
+# Dataset Structure (COCO Format)
 
-## Authenticate
-$ roboflow login
+The dataset layout adheres to standard COCO object detection format:
 
-
-# Data layout (COCO-format)
-
-D:/PMT_/train_SSD_MobileV3/
+```
+dataset_root/
 ├─ train/
 │  ├─ _annotations.coco.json
 │  └─ images...
 ├─ valid/
 │  ├─ _annotations.coco.json
 │  └─ images...
+```
+
+## Downloading via Roboflow
+Set your API key and download:
+```bash
+python download_data.py
+```
