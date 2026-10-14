@@ -3,7 +3,7 @@ torchvision>=0.17
 tqdm
 albumentations>=1.4
 opencv-python
-pycocotools>=2.0.7
+pycocotools==2.0.11
 scikit-learn
 numpy
 PyYAML

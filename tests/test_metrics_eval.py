@@ -315,14 +315,20 @@ def test_coco_map_edge_cases():
         direct_eval.evaluate()
         
         # Find eval results filtered precisely by category_id, maxDet, and aRng:
-        eval_by_img = {
-            e["image_id"]: e 
-            for e in direct_eval.evalImgs 
+        filtered_evals = [
+            e for e in direct_eval.evalImgs 
             if e is not None 
             and e.get("category_id") == 1 
             and e.get("maxDet") == 100 
             and e.get("aRng") == [0, 1e5**2]
-        }
+        ]
+        
+        # Verify that each image_id appears exactly once in the filtered results (no silent overwrites)
+        img_ids_found = [e["image_id"] for e in filtered_evals]
+        assert len(img_ids_found) == len(set(img_ids_found)), f"Duplicate evalImgs detected for same image_id: {img_ids_found}"
+        assert set(img_ids_found) == {10, 20, 30}, f"Expected eval entries for {{10, 20, 30}}, got {set(img_ids_found)}"
+        
+        eval_by_img = {e["image_id"]: e for e in filtered_evals}
         
         # Verify Image 10 (duplicate detection handling):
         e10 = eval_by_img[10]
