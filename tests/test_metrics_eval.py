@@ -12,6 +12,7 @@ import numpy as np
 import pytest
 from unittest.mock import MagicMock
 from pycocotools.coco import COCO
+from pycocotools.cocoeval import COCOeval
 
 from models_fasterrcnn_resnet50.src.metrics.prf import detection_prf_cm as frcnn_prf
 from models_ssdlite_mobilenetv3.src.metrics.prf import detection_prf_cm as ssd_prf
@@ -296,20 +297,48 @@ def test_coco_map_edge_cases():
             model, mock_loader, coco_gt,
             device="cpu", conf_thres=0.30, label2cat={1: 1}
         )
+        assert abs(map_std - 1.0) < 1e-4
+        assert abs(map_03 - 1.0) < 1e-4
+
+        # Direct white-box inspection of COCOeval internal matching arrays (evalImgs):
+        # We instantiate COCOeval directly with the aggregated results to verify:
+        # 1. dtMatches: detection 0 (score 0.95) matched GT id 1, while duplicate detection 1 (score 0.85) has match=0 (FP).
+        # 2. dtIgnore: detection on iscrowd=1 GT (Image 20) has dtIgnore=True (ignored match, neither TP nor FP).
+        # 3. gtIgnore: image 20 GT has gtIgnore=1, image 10 GT has gtIgnore=0.
+        coco_dt = coco_gt.loadRes([
+            {"image_id": 10, "category_id": 1, "bbox": [10.0, 10.0, 30.0, 30.0], "score": 0.95},
+            {"image_id": 10, "category_id": 1, "bbox": [10.0, 10.0, 30.0, 30.0], "score": 0.85},
+            {"image_id": 20, "category_id": 1, "bbox": [20.0, 20.0, 30.0, 30.0], "score": 0.90},
+            {"image_id": 30, "category_id": 1, "bbox": [5.0, 5.0, 20.0, 20.0], "score": 0.80},
+        ])
+        direct_eval = COCOeval(coco_gt, coco_dt, "bbox")
+        direct_eval.evaluate()
         
-        # Quantitative COCO protocol analysis for Category 1 (palm):
-        # GT non-crowd = 1 (Image 10)
-        # Total positive detections for palm:
-        # 1. Image 10, pred 0 (score 0.95): matches GT 1 -> TP (Recall = 1.0, Precision = 1.0)
-        # 2. Image 20, pred 0 (score 0.90): matches iscrowd=1 GT -> COCOeval ignores this match (neither TP nor FP)
-        # 3. Image 10, pred 1 (score 0.85): duplicate prediction -> FP (Recall = 1.0, Precision = 1/2 = 0.5)
-        # 4. Image 30, pred 0 (score 0.80): background false positive -> FP (Recall = 1.0, Precision = 1/3 = 0.333)
-        # Since Recall reaches 1.0 at rank 1 with Precision=1.0, the max precision across recall threshold [0..1] is 1.0.
-        # Thus standard COCO AP = 1.0 for this category.
-        print(f"[COCOeval Edge-Case Result] mAP@0.5:0.95 = {map_std:.4f}, mAP@0.3 = {map_03:.4f}")
-        assert abs(map_std - 1.0) < 1e-4, f"Expected AP=1.0 when top prediction matches GT at 100% recall, got {map_std}"
-        assert abs(map_03 - 1.0) < 1e-4, f"Expected AP@0.3=1.0, got {map_03}"
-        print("[PASS] test_coco_map_edge_cases (iscrowd, duplicate detections, background images verified!)")
+        # Find eval results by image_id
+        eval_by_img = {e["image_id"]: e for e in direct_eval.evalImgs if e is not None and e["aRng"] == [0, 1e5**2]}
+        
+        # Verify Image 10 (duplicate detection handling):
+        e10 = eval_by_img[10]
+        # dtMatches shape is (10 IoU thresholds, 2 detections).
+        # High-score pred (dt 0) must match GT 1 (dtMatches[:, 0] == 1.0)
+        # Duplicate pred (dt 1) must be unmatched / FP (dtMatches[:, 1] == 0.0)
+        assert np.all(e10["dtMatches"][:, 0] == 1.0), "Highest-score detection must match GT 1"
+        assert np.all(e10["dtMatches"][:, 1] == 0.0), "Duplicate detection must NOT match GT 1 (treated as FP)"
+        assert np.all(e10["dtIgnore"][:, 0] == False), "Top detection must NOT be ignored"
+        assert np.all(e10["dtIgnore"][:, 1] == False), "Duplicate detection must NOT be ignored (penalized as FP)"
+        
+        # Verify Image 20 (iscrowd=1 handling):
+        e20 = eval_by_img[20]
+        assert np.all(e20["dtIgnore"] == True), "Detection matching iscrowd=1 GT must have dtIgnore=True"
+        assert e20["gtIgnore"] == [1], "Ground truth with iscrowd=1 must have gtIgnore=1"
+        
+        # Verify Image 30 (pure background image):
+        e30 = eval_by_img[30]
+        assert np.all(e30["dtMatches"] == 0.0), "Detection on pure background must have dtMatches=0 (FP)"
+        assert np.all(e30["dtIgnore"] == False), "Detection on background must not be ignored"
+        assert len(e30["gtIgnore"]) == 0, "Background image has no GTs"
+        
+        print("[PASS] test_coco_map_edge_cases (Internal dtMatches, dtIgnore, gtIgnore, and duplicate FP verified!)")
     finally:
         Path(temp_json_path).unlink(missing_ok=True)
 
