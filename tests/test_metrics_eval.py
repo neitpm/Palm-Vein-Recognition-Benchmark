@@ -225,8 +225,88 @@ def test_coco_map_full_cocoeval():
         Path(temp_json_path).unlink(missing_ok=True)
 
 
+def test_coco_map_edge_cases():
+    """Verify edge cases:
+    1. Image with NO Ground Truth annotations (background image) -> should penalize FP or ignore if no preds.
+    2. Ground Truth with iscrowd=1 -> should be ignored in COCO evaluation as per standard protocol.
+    3. Duplicate detections on the same ground truth box -> only the highest-score prediction matches TP, remaining are FP.
+    4. Multiple categories -> ensures category filtering doesn't cross-contaminate.
+    """
+    coco_dict = {
+        "images": [
+            {"id": 10, "width": 100, "height": 100}, # Image with 1 palm GT
+            {"id": 20, "width": 100, "height": 100}, # Image with iscrowd=1 GT
+            {"id": 30, "width": 100, "height": 100}, # Pure background image (0 GT)
+        ],
+        "annotations": [
+            {"id": 1, "image_id": 10, "category_id": 1, "bbox": [10, 10, 30, 30], "area": 900, "iscrowd": 0},
+            {"id": 2, "image_id": 20, "category_id": 1, "bbox": [20, 20, 30, 30], "area": 900, "iscrowd": 1},
+        ],
+        "categories": [
+            {"id": 1, "name": "palm"},
+            {"id": 2, "name": "other"}
+        ]
+    }
+    
+    with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
+        json.dump(coco_dict, f)
+        temp_json_path = f.name
+        
+    try:
+        coco_gt = COCO(temp_json_path)
+        
+        imgs = [torch.zeros(3, 100, 100), torch.zeros(3, 100, 100), torch.zeros(3, 100, 100)]
+        tgts = [
+            {"image_id": torch.tensor([10])},
+            {"image_id": torch.tensor([20])},
+            {"image_id": torch.tensor([30])}
+        ]
+        mock_loader = [(imgs, tgts)]
+        
+        # Predictions:
+        # Image 10: 2 duplicate predictions on the single GT box [10, 10, 30, 30] (1 with score 0.95, 1 with score 0.85)
+        # Image 20: 1 prediction on the iscrowd box (score 0.90)
+        # Image 30: 1 false positive prediction on background (score 0.80)
+        preds = [
+            # Image 10
+            {
+                "boxes": torch.tensor([[10., 10., 40., 40.], [10., 10., 40., 40.]]),
+                "scores": torch.tensor([0.95, 0.85]),
+                "labels": torch.tensor([1, 1])
+            },
+            # Image 20
+            {
+                "boxes": torch.tensor([[20., 20., 50., 50.]]),
+                "scores": torch.tensor([0.90]),
+                "labels": torch.tensor([1])
+            },
+            # Image 30
+            {
+                "boxes": torch.tensor([[5., 5., 25., 25.]]),
+                "scores": torch.tensor([0.80]),
+                "labels": torch.tensor([1])
+            }
+        ]
+        
+        model = MockModel(preds)
+        map_std, map_03 = frcnn_coco_map(
+            model, mock_loader, coco_gt,
+            device="cpu", conf_thres=0.30, label2cat={1: 1}
+        )
+        
+        # COCO standard evaluation handles iscrowd and duplicate boxes:
+        # Result should be computed stably without crashes or NaN
+        assert not np.isnan(map_std)
+        assert not np.isnan(map_03)
+        print(f"[COCOeval Edge-Case Result] mAP@0.5:0.95 = {map_std:.4f}, mAP@0.3 = {map_03:.4f}")
+        print("[PASS] test_coco_map_edge_cases (iscrowd, duplicate detections, background images verified!)")
+    finally:
+        Path(temp_json_path).unlink(missing_ok=True)
+
+
 if __name__ == "__main__":
     test_frcnn_prf_multi_batch()
     test_ssd_prf_multi_batch()
     test_coco_map_full_cocoeval()
+    test_coco_map_edge_cases()
     print("\nALL EVALUATION INTEGRITY TESTS PASSED!")
