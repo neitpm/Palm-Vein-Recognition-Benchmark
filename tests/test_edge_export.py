@@ -140,7 +140,7 @@ def test_sampled_repository_images_numerical_parity():
     """
     Verify numerical parity between PyTorch and ONNX predictions on sampled repository images:
     - Verifies exact detection count match post-filtering.
-    - Matches detections optimally by label and IoU rather than arbitrary array indexing.
+    - Matches detections via one-to-one greedy IoU matching on identical class labels.
     - Checks that every PyTorch detection finds a matching ONNX counterpart with IoU > 0.999.
     - Validates label exact match and score difference < 1e-4.
     - Clarification: This validates NUMERICAL PARITY between runtimes, not ground-truth detection accuracy.

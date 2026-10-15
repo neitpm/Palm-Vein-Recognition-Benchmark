@@ -227,7 +227,7 @@ Verification performs:
 2. Session initialization strictly using `CPUExecutionProvider`.
 3. Shape and type contract verification on batch size 1.
 4. Numerical parity check between PyTorch and ONNX Runtime predictions on synthetic input ($\Delta_{\text{box}} < 2.0 \times 10^{-4}$, $\Delta_{\text{score}} < 1.0 \times 10^{-6}$).
-5. **Sampled repository images parity check:** Validated on sample ROI visualization images (`models_ssdlite_mobilenetv3/runs/rois/*_vis.jpg`) using bipartite optimal IoU matching. Per-prediction matched IoUs, label consistency (100% agreement), and score deltas are archived in [`edge_exports/sample_images_parity.json`](file:///d:/user/projects/Palm-Vein-Recognition-Benchmark/edge_exports/sample_images_parity.json).
+5. **Sampled repository images parity check:** Validated on sample ROI visualization images (`models_ssdlite_mobilenetv3/runs/rois/*_vis.jpg`) using one-to-one greedy IoU matching on identical class labels. Per-prediction matched IoUs, label consistency (100% agreement), and score deltas are archived in [`edge_exports/sample_images_parity.json`](file:///d:/user/projects/Palm-Vein-Recognition-Benchmark/edge_exports/sample_images_parity.json).
 
 ### 8.5. Benchmarking CPU Latency (Development Workstation)
 Measures the edge inference cycle at batch size 1 ($320 \times 320$) over 300 measured iterations with 50 warm-up runs on a synthetic camera frame:
