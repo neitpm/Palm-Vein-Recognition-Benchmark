@@ -22,3 +22,6 @@ data/
 Thumbs.db
 .vscode/
 .idea/
+
+# Hugging Face Release Staging Folder
+hf_releases/

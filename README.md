@@ -193,7 +193,10 @@ python benchmark_comparison/plot_comparison.py
 > [!NOTE]
 > **Clean Clone Verification & Checkpoint Availability:**  
 > The tracked ONNX artifact (`edge_exports/ssdlite_mobilenetv3.onnx`) can be verified and benchmarked immediately after cloning without external dependencies.  
-> Checkpoint-dependent export and parity tests (`test_export_onnx_cpu_pipeline`, `test_sampled_repository_images_numerical_parity`) are skipped on clean clones unless the original `.pth` checkpoint is downloaded into the documented path (`models_ssdlite_mobilenetv3/output_newdataset/checkpoints/best_loss.pth`). Pre-trained checkpoints will be made available via GitHub Releases / Hugging Face model hub.
+> Checkpoint-dependent export and parity tests (`test_export_onnx_cpu_pipeline`, `test_sampled_repository_images_numerical_parity`) are skipped on clean clones unless the original `.pth` checkpoint is downloaded into the documented path (`models_ssdlite_mobilenetv3/output_newdataset/checkpoints/best_loss.pth`).  
+> 
+> Checkpoints, ONNX models, and full reproducibility artifacts are published on the Hugging Face Hub:  
+> 🔗 **[Download SSDLite ONNX and PyTorch checkpoints on Hugging Face](https://huggingface.co/neitpm/ssdlite-palm-vein-roi)**
 
 To install prerequisites on CPU:
 ```bash
