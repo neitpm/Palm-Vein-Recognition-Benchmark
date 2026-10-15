@@ -179,14 +179,18 @@ python benchmark_comparison/plot_comparison.py
 > **Edge Inference Prototype & Workstation Benchmark Disclaimer:**  
 > This deployment pipeline represents a **CPU-based ONNX edge inference prototype** targeting compact single-stage palm ROI detection.  
 > The SSDLite checkpoint was selected using the repository's validation-loss checkpoint policy (`best_loss.pth`) and exported to FP32 ONNX on CPU. Historical detection metrics in Section 5 are retained as provenance and will be refreshed after re-evaluation with the corrected evaluator.  
-> All latency and throughput benchmarks reported below were measured as a **CPU benchmark on the development workstation** (Intel® Core™ i5-14600K, 4 CPU threads, ONNX Runtime CPUExecutionProvider).  
+> All latency and throughput benchmarks reported below were measured as a **CPU benchmark on the development workstation** (Intel® Core™ i5-14600K, 4 CPU threads, Windows build 10.0.26200, ONNX Runtime CPUExecutionProvider).  
 > **These measurements do not represent edge-device performance.** Target edge hardware (such as Raspberry Pi 4/5, NVIDIA Jetson Nano/Orin, or edge NPUs) operates under markedly different compute architectures, thermal envelopes, and memory bandwidth constraints. True edge performance must be verified directly on physical target devices.
+>
+> *Note on Branching:* If accessing from the repository root, switch to the dedicated edge deployment branch via:  
+> `git checkout feat/edge-inference-pipeline`
 
 ### 8.1. Checkpoint Provenance & Reproducibility
 - **Source Checkpoint:** `models_ssdlite_mobilenetv3/output_newdataset/checkpoints/best_loss.pth`  
   - SHA-256: `668afeffbf77d9afbaace41c277e95dc105d65fae3c5e5b10b431f29b386edde`
 - **Exported ONNX Model:** `edge_exports/ssdlite_mobilenetv3.onnx`  
   - SHA-256: `550e80aa48daafb340c2b589467e5806d5a8144176e626d8c5ccd1aeeb58bb80`
+- **Workstation OS Provenance:** Windows platform reported by Python: `Windows-10-10.0.26200-SP0` (Windows kernel build `10.0.26200`).
 - **Software Stack:** Python 3.11, PyTorch 2.14.1+cpu, ONNX 1.23.2, ONNX Runtime 1.31.0. Exact dependencies are pinned in [requirements-lock.txt](file:///requirements-lock.txt).
 
 To install prerequisites on CPU:
