@@ -7,3 +7,5 @@ pycocotools==2.0.11
 scikit-learn
 numpy
 PyYAML
+onnx>=1.14.0
+onnxruntime>=1.16.0

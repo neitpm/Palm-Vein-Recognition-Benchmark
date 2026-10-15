@@ -1,0 +1,4 @@
+# Edge GPU & TensorRT Acceleration Dependencies (Optional, for GPU-enabled edge platforms like Jetson/x86-CUDA)
+# Do NOT install this on CPU-only edge testing environments
+onnxruntime-gpu>=1.16.0
+# tensorrt>=8.6.0

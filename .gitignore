@@ -5,6 +5,7 @@ __pycache__/
 *.egg-info/
 .venv/
 .env
+.pytest_cache/
 
 # Checkpoints lớn (khuyên dùng Git LFS hoặc Release)
 *.pth
