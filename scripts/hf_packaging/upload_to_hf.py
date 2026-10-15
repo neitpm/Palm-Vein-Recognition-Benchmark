@@ -40,8 +40,17 @@ def main():
         sys.exit(1)
 
     if not token:
-        print("[WARNING] No Hugging Face token specified via --token or HF_TOKEN environment variable.")
-        print("[INFO] Attempting to use existing cached credentials from `huggingface-cli login`...")
+        from huggingface_hub import HfFolder, login
+        token = HfFolder.get_token()
+        if not token:
+            print("[INFO] No Hugging Face token detected.")
+            print("[INFO] Please paste your Hugging Face write token (get it from https://huggingface.co/settings/tokens):")
+            try:
+                login()
+                token = HfFolder.get_token()
+            except Exception as e:
+                print(f"[ERROR] Login failed: {e}")
+                sys.exit(1)
 
     api = HfApi(token=token)
 
