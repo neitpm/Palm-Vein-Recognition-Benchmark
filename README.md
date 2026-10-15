@@ -248,7 +248,7 @@ python scripts/benchmark_edge_cpu.py --threads 4 --warmup 50 --runs 300
 - **Workstation Throughput:** $\approx 122.2 \text{ FPS on the development workstation using ONNX Runtime CPU}$
 
 > **Accurate Framing Note (for README / Technical Reports):**  
-> *"The SSDLite checkpoint was selected using the repository's validation-checkpoint policy and exported to FP32 ONNX on CPU. The ONNX model was verified against the PyTorch reference, with deployment metrics and parity results recorded separately. On the development workstation, the ONNX Runtime CPU pipeline achieved 8.18 ms mean latency at 320×320 with four CPU threads (122.2 FPS on development workstation using ONNX Runtime CPU). Historical detection metrics are retained as provenance and will be refreshed after re-evaluation with the corrected evaluator."*
+> *"CPU-based ONNX edge inference prototype for SSDLite-MobileNetV3 with checkpoint integrity, reproducibility-oriented profiling, and PyTorch–ONNX numerical parity verification. On the development workstation, the ONNX Runtime CPU pipeline achieved 8.18 ms mean latency at 320×320 with four CPU threads (122.2 FPS on development workstation using ONNX Runtime CPU). Historical detection metrics are retained as provenance and will be refreshed after re-evaluation with the corrected evaluator."*
 
 Detailed benchmark numbers, CPU processor specifications, and software environment metadata are recorded in [`edge_exports/benchmark_cpu.json`](file:///d:/user/projects/Palm-Vein-Recognition-Benchmark/edge_exports/benchmark_cpu.json).
 
