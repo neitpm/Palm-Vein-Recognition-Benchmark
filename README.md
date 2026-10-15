@@ -173,5 +173,88 @@ python benchmark_comparison/plot_comparison.py
 
 ---
 
-## 8. License
+## 8. Edge Deployment (SSDLite-MobileNetV3 Prototype)
+
+> [!NOTE]
+> **Edge Inference Prototype & Workstation Benchmark Disclaimer:**  
+> This deployment pipeline represents a **CPU-based ONNX edge inference prototype** targeting compact single-stage palm ROI detection.  
+> The SSDLite checkpoint was selected using the repository's validation-loss checkpoint policy (`best_loss.pth`) and exported to FP32 ONNX on CPU. Historical detection metrics in Section 5 are retained as provenance and will be refreshed after re-evaluation with the corrected evaluator.  
+> All latency and throughput benchmarks reported below were measured as a **CPU benchmark on the development workstation** (Intel® Core™ i5-14600K, 4 CPU threads, Windows build 10.0.26200, ONNX Runtime CPUExecutionProvider).  
+> **These measurements do not represent edge-device performance.** Target edge hardware (such as Raspberry Pi 4/5, NVIDIA Jetson Nano/Orin, or edge NPUs) operates under markedly different compute architectures, thermal envelopes, and memory bandwidth constraints. True edge performance must be verified directly on physical target devices.
+>
+> *Note on Branching:* If accessing from the repository root, switch to the dedicated edge deployment branch via:  
+> `git checkout feat/edge-inference-pipeline`
+
+### 8.1. Checkpoint Provenance & Reproducibility
+- **Source Checkpoint:** `models_ssdlite_mobilenetv3/output_newdataset/checkpoints/best_loss.pth`  
+  - SHA-256: `668afeffbf77d9afbaace41c277e95dc105d65fae3c5e5b10b431f29b386edde`
+- **Exported ONNX Model:** `edge_exports/ssdlite_mobilenetv3.onnx`  
+  - SHA-256: `550e80aa48daafb340c2b589467e5806d5a8144176e626d8c5ccd1aeeb58bb80`
+- **Workstation OS Provenance:** Windows platform reported by Python: `Windows-10-10.0.26200-SP0` (Windows kernel build `10.0.26200`).
+- **Software Stack:** Python 3.11, PyTorch 2.14.1+cpu, ONNX 1.23.2, ONNX Runtime 1.31.0. Exact dependencies are pinned in [requirements-lock.txt](file:///requirements-lock.txt).
+
+To install prerequisites on CPU:
+```bash
+pip install -r requirements.txt
+```
+*(Optional for GPU-enabled edge platforms: see [requirements-edge-gpu.txt](file:///requirements-edge-gpu.txt))*
+
+### 8.2. Exporting SSDLite Checkpoint to ONNX (CPU-only)
+Exports the SSDLite checkpoint to an ONNX computational graph on CPU without invoking CUDA:
+```bash
+python scripts/export_ssdlite_edge.py --opset 14
+```
+Output artifact is generated at `edge_exports/ssdlite_mobilenetv3.onnx`.
+
+### 8.3. ONNX Graph Output Contract & Semantics
+In TorchVision's SSDLite detection architecture, the evaluation forward path (`model.eval()`) incorporates anchor box decoding, score thresholding (`score_thresh=0.001`), and Non-Maximum Suppression (`nms_thresh=0.55`, `topk_candidates=300`, `detections_per_img=300`). 
+
+When exported to ONNX via TorchScript trace (`dynamo=False`):
+- **Graph Output Contract:** The exported ONNX graph encapsulates the full evaluation pipeline, outputting three dynamic-length tensors:
+  1. `boxes`: Shape `(N, 4)` in `(x1, y1, x2, y2)` format scaled to model input size ($320 \times 320$).
+  2. `scores`: Shape `(N,)` containing post-NMS detection confidences.
+  3. `labels`: Shape `(N,)` containing class IDs (`1` = palm).
+- **Client Postprocessing:** Downstream edge consumer code (`scripts/benchmark_edge_cpu.py` or runtime apps) only needs to rescale coordinates from $320 \times 320$ to original camera dimensions, apply any operational confidence cutoff (e.g. $\ge 0.30$), and perform application-specific ROI margin expansion (+10%).
+
+### 8.4. Verifying ONNX Graph Integrity & Numerical Parity (vs. Detection Accuracy)
+Validates runtime equivalence between the exported ONNX model and the PyTorch CPU baseline:
+```bash
+python scripts/verify_onnx_cpu.py
+```
+
+> [!IMPORTANT]
+> **Numerical Parity vs. Detection Accuracy:**  
+> These verification checks evaluate **numerical parity** (confirming that ONNX Runtime replicates PyTorch predictions without runtime divergence). They do **not** measure **detection accuracy** against ground-truth labels. Detection quality metrics on the validation dataset remain subject to re-evaluation with the updated evaluator.
+
+Verification performs:
+1. Structural schema validation via `onnx.checker`.
+2. Session initialization strictly using `CPUExecutionProvider`.
+3. Shape and type contract verification on batch size 1.
+4. Numerical parity check between PyTorch and ONNX Runtime predictions on synthetic input ($\Delta_{\text{box}} < 2.0 \times 10^{-4}$, $\Delta_{\text{score}} < 1.0 \times 10^{-6}$).
+5. **Sampled repository images parity check:** Validated on sample ROI visualization images (`models_ssdlite_mobilenetv3/runs/rois/*_vis.jpg`) using one-to-one greedy IoU matching on identical class labels. Per-prediction matched IoUs, label consistency (100% agreement), and score deltas are archived in [`edge_exports/sample_images_parity.json`](file:///d:/user/projects/Palm-Vein-Recognition-Benchmark/edge_exports/sample_images_parity.json).
+
+### 8.5. Benchmarking CPU Latency (Development Workstation)
+Measures the edge inference cycle at batch size 1 ($320 \times 320$) over 300 measured iterations with 50 warm-up runs on a synthetic camera frame:
+```bash
+python scripts/benchmark_edge_cpu.py --threads 4 --warmup 50 --runs 300
+```
+
+#### Workstation CPU Benchmark Results (Intel® Core™ i5-14600K, 4 CPU threads, Batch Size 1, 300 runs):
+*Provenance: Tracked in [`edge_exports/benchmark_cpu.json`](file:///d:/user/projects/Palm-Vein-Recognition-Benchmark/edge_exports/benchmark_cpu.json) at commit `fbb23dd6fc7ad40145858fcf49db880ef7d59178` (50 warmup runs, 300 measured iterations).*
+- **Preprocessing Latency:** $1.10 \pm 0.33 \text{ ms}$ (Color conversion, resize to $320 \times 320$, tensor conversion)
+- **Model Forward Latency:** $7.02 \pm 1.57 \text{ ms}$ (ONNX Runtime CPUExecutionProvider graph execution, **inclusive of in-graph NMS**)
+- **Postprocessing Latency:** $0.06 \pm 0.04 \text{ ms}$ (Coordinate rescaling to original camera frame, confidence thresholding $\ge 0.30$, and +10% bbox expansion; note: NMS is executed inside the model forward step)
+- **Total Pipeline Latency:** $8.18 \pm 1.77 \text{ ms}$ (p50: $7.72 \text{ ms}$, p95: $11.19 \text{ ms}$)
+- **Workstation Throughput:** $\approx 122.2 \text{ FPS on the development workstation using ONNX Runtime CPU}$
+
+> **Accurate Framing Note (for README / Technical Reports):**  
+> *"CPU-based ONNX edge inference prototype for SSDLite-MobileNetV3 with checkpoint integrity, reproducibility-oriented profiling, and PyTorch–ONNX numerical parity verification. On the development workstation, the ONNX Runtime CPU pipeline achieved 8.18 ms mean latency at 320×320 with four CPU threads (122.2 FPS on development workstation using ONNX Runtime CPU). Historical detection metrics are retained as provenance and will be refreshed after re-evaluation with the corrected evaluator."*
+
+Detailed benchmark numbers, CPU processor specifications, and software environment metadata are recorded in [`edge_exports/benchmark_cpu.json`](file:///d:/user/projects/Palm-Vein-Recognition-Benchmark/edge_exports/benchmark_cpu.json).
+
+---
+
+## 9. License
 This project is licensed under the [MIT License](LICENSE).
+
+

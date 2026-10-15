@@ -1,0 +1,61 @@
+{
+  "metadata": {
+    "device": "cpu",
+    "benchmark_environment": "development_workstation",
+    "cpu_info": {
+      "model": "Intel(R) Core(TM) i5-14600K",
+      "architecture": "AMD64",
+      "platform": "Windows-10-10.0.26200-SP0",
+      "logical_cores": 20
+    },
+    "batch_size": 1,
+    "cpu_threads": 4,
+    "warmup_runs": 50,
+    "test_runs": 300,
+    "python_version": "3.11.15 (main, Jul 18 2026, 17:06:27) [MSC v.1944 64 bit (AMD64)]",
+    "pytorch_version": "2.14.1+cpu",
+    "onnxruntime_version": "1.31.0",
+    "git_commit": "fbb23dd6fc7ad40145858fcf49db880ef7d59178",
+    "checkpoint_path": "D:\\user\\projects\\Palm-Vein-Recognition-Benchmark\\models_ssdlite_mobilenetv3\\output_newdataset\\checkpoints\\best_loss.pth",
+    "onnx_model_path": "D:\\user\\projects\\Palm-Vein-Recognition-Benchmark\\edge_exports\\ssdlite_mobilenetv3.onnx"
+  },
+  "metrics": {
+    "preprocessing": {
+      "mean_ms": 1.0969183333205972,
+      "std_ms": 0.32902480112406685,
+      "p50_ms": 0.9916000008161063,
+      "p90_ms": 1.4176800008499415,
+      "p95_ms": 1.7439100002775376,
+      "min_ms": 0.7414000010612654,
+      "max_ms": 3.002299999934621
+    },
+    "model_forward": {
+      "mean_ms": 7.019018000070598,
+      "std_ms": 1.5691275748844002,
+      "p50_ms": 6.642100001045037,
+      "p90_ms": 8.981880000101228,
+      "p95_ms": 9.859530001631356,
+      "min_ms": 4.640199998902972,
+      "max_ms": 14.349400000355672
+    },
+    "postprocessing": {
+      "mean_ms": 0.06315833340825823,
+      "std_ms": 0.03639226158320573,
+      "p50_ms": 0.05270000019663712,
+      "p90_ms": 0.09302000053139636,
+      "p95_ms": 0.11514499965414872,
+      "min_ms": 0.03280000055383425,
+      "max_ms": 0.4025000016554259
+    },
+    "total_pipeline": {
+      "mean_ms": 8.179302333410305,
+      "std_ms": 1.7687639225771685,
+      "p50_ms": 7.7172999999675085,
+      "p90_ms": 10.527799999726994,
+      "p95_ms": 11.191924999820914,
+      "min_ms": 5.4287000002659624,
+      "max_ms": 15.76530000056664
+    },
+    "throughput_fps": 122.25981620892802
+  }
+}
