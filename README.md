@@ -190,6 +190,11 @@ python benchmark_comparison/plot_comparison.py
 - **Workstation OS Provenance:** Windows platform reported by Python: `Windows-10-10.0.26200-SP0` (Windows kernel build `10.0.26200`).
 - **Software Stack:** Python 3.11, PyTorch 2.14.1+cpu, ONNX 1.23.2, ONNX Runtime 1.31.0. Exact dependencies are pinned in [requirements-lock.txt](file:///requirements-lock.txt).
 
+> [!NOTE]
+> **Clean Clone Verification & Checkpoint Availability:**  
+> The tracked ONNX artifact (`edge_exports/ssdlite_mobilenetv3.onnx`) can be verified and benchmarked immediately after cloning without external dependencies.  
+> Checkpoint-dependent export and parity tests (`test_export_onnx_cpu_pipeline`, `test_sampled_repository_images_numerical_parity`) are skipped on clean clones unless the original `.pth` checkpoint is downloaded into the documented path (`models_ssdlite_mobilenetv3/output_newdataset/checkpoints/best_loss.pth`). Pre-trained checkpoints will be made available via GitHub Releases / Hugging Face model hub.
+
 To install prerequisites on CPU:
 ```bash
 pip install -r requirements.txt
